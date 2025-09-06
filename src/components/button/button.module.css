@@ -1,0 +1,9 @@
+/* These are scoped only to Button component */
+.btn {
+  border: 2px solid white;
+  transition: transform 0.2s ease;
+}
+
+.btn:hover {
+  transform: scale(1.05);
+}

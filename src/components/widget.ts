@@ -6,6 +6,7 @@ type ChangeDetail = { value: string; count: number };
 type ToggleDetail = { open: boolean };
 
 const sheet = new CSSStyleSheet();
+
 sheet.replaceSync(`
 :host {
   --x-bg: #f8fafc;

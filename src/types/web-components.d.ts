@@ -29,6 +29,13 @@ declare global {
         value?: string;
         name?: string;
       };
+      'x-demo-widget-test': WCProps & {
+        open?: boolean;
+        count?: number;
+        mode?: 'info' | 'success' | 'warning' | 'error';
+        value?: string;
+        name?: string;
+      };
     }
   }
 }

@@ -6,5 +6,5 @@ export default function Demo() {
   useEffect(() => {
     import('../../components/widget_test');
   }, []);
-  return <x-demo-widget-test />;
+  return <x-demo-widget-test value="hi" open />;
 }

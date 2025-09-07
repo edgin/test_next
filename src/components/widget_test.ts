@@ -1,14 +1,15 @@
 export class XDemoWidgetTest extends HTMLElement {
-  // observed attributes
   static get observedAttributes() {
     return ['value', 'open'];
   }
-  // This private field named root will hold the ShadowRoot object created by attachShadow.
-  #root: ShadowRoot;
 
-  // internal state
+  #root: ShadowRoot;
   #value = '';
   #open = true;
+
+  // refs for dynamic updates
+  #valueEl!: HTMLElement;
+  #contentEl!: HTMLElement;
 
   get value() {
     return this.#value;
@@ -34,31 +35,66 @@ export class XDemoWidgetTest extends HTMLElement {
     }
   }
 
-  // Construcor
   constructor() {
     super();
     this.#root = this.attachShadow({ mode: 'open' });
-    // this.#root.innerHTML = `<div>Test Widget x</div>`;
+
+    // Build the shadow DOM ONCE (includes <style> and <slot>s)
+    this.#root.innerHTML = `
+      <style>
+        :host {
+          display: block;
+          border: 2px solid #6366f1;
+          border-radius: 12px;
+          padding: 12px;
+          font: 14px/1.4 system-ui, sans-serif;
+          background: #f8fafc;
+        }
+        .header { font-weight: 700; margin-bottom: 8px; }
+        .content { padding: 8px; background: #ffffff; border-radius: 8px; }
+        .footer { margin-top: 8px; font-size: 12px; color: #64748b; }
+        /* first-level slotted nodes */
+        ::slotted([slot="header"]) { color: #0ea5e9; }
+        ::slotted([slot="footer"]) { font-style: italic; }
+      </style>
+
+      <div class="header">
+        <slot name="header">X Demo</slot>
+      </div>
+
+      <div class="content">
+        <div>Value: <b id="val"></b></div>
+        <slot></slot>
+      </div>
+
+      <div class="footer">
+        <slot name="footer">Footer</slot>
+      </div>
+    `;
+
+    this.#valueEl = this.#root.querySelector('#val')!;
+    this.#contentEl = this.#root.querySelector('.content')!;
   }
 
-  // RENDER ON FIRST CONNECT
   connectedCallback() {
-    // Apply any initial attributes to internal state
+    // hydrate from initial attributes
     const attrVal = this.getAttribute('value');
     if (attrVal !== null) this.#value = attrVal;
-
-    const hasOpen = this.hasAttribute('open');
-    // If 'open' is present as empty attr => true; if absent => keep default
-    if (hasOpen) this.#open = true;
-
+    if (this.hasAttribute('open')) this.#open = true;
     this.render();
   }
 
-  private render() {
-    this.#root.innerHTML = `
-      <div ${this.#open ? '' : 'style="display:none"'}>Value: <b>${this.esc(this.#value)}</b> </div>
-    `;
+  attributeChangedCallback(name: string, _oldV: string | null, newV: string | null) {
+    if (name === 'value') this.value = newV ?? '';
+    if (name === 'open') this.open = newV !== null;
   }
+
+  private render() {
+    // IMPORTANT: do NOT touch shadowRoot.innerHTML again
+    this.#valueEl.textContent = this.#value;
+    this.#contentEl.style.display = this.#open ? '' : 'none';
+  }
+
   private reflect(name: string, val: string | null) {
     if (val == null) this.removeAttribute(name);
     else this.setAttribute(name, val);
@@ -66,15 +102,8 @@ export class XDemoWidgetTest extends HTMLElement {
   private reflectBool(name: string, on: boolean) {
     on ? this.setAttribute(name, '') : this.removeAttribute(name);
   }
-  private esc(s: string) {
-    return s.replace(
-      /[&<>"']/g,
-      (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]!,
-    );
-  }
 }
 
-// Define the custom element if not already defined
 if (!customElements.get('x-demo-widget-test')) {
   customElements.define('x-demo-widget-test', XDemoWidgetTest);
 }

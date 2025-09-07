@@ -6,5 +6,10 @@ export default function Demo() {
   useEffect(() => {
     import('../../components/widget_test');
   }, []);
-  return <x-demo-widget-test value="hi" open />;
+  return (
+    <x-demo-widget-test value="Ahoj">
+      <span slot="header">🚢 Header</span>I am default content
+      <small slot="footer">mini footer</small>
+    </x-demo-widget-test>
+  );
 }
